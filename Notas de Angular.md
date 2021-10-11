@@ -192,6 +192,22 @@ When selectedHero is undefined, the ngIf removes the hero detail from the DOM. T
 
 When the user picks a hero, selectedHero has a value and ngIf puts the hero detail into the DOM.
 
+## Plantillas
+
+```html
+<ng-container *ngIf="!isLogged; else logueado">
+    <button (click)="isLogged = true">Iniciar Sesion</button>
+    <button>Registrarse</button>
+</ng-container>
+<ng-template #logueado>
+    <button>Ir a Administracion</button>
+    <button>Ir a mi perfil</button>
+    <button (click)="isLogged = false">Cerrar Sesion</button>
+</ng-template>
+```
+
+Los ng container no salen en el html. La variable isLogged esta inicializada como false en el typescript por lo que se muestra todo el contenido del ng-container. Cuando se presiona el boton iniciar sesion pasa a tener valor true. Entonces el ng-container desaparece y se va por el else por lo que se muestra el ng-template. El ng-template se muestra porque en el else esta indicando que se muestre logueado que es como se llamo al ng-template.
+
 ## **Servicios**
 
 Creamos el servicio(Manual)
