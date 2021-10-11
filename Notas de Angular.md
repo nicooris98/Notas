@@ -19,23 +19,57 @@ Crear componentes(Forma manual):
 
 1. Crear componente
 
-   ![image-20210903152055111](/home/oris/.config/Typora/typora-user-images/image-20210903152055111.png)
+   ```typescript
+   import { Component } from "@angular/core";
+   
+   @Component({
+   	selector: 'hola-mundo',
+   	template: '<p>Hola Mundo Component</p>'
+   })
+   export class HolaMundoComponent{}
+   ```
 
 2. Registrar en modulo
 
-   ![image-20210903152221729](/home/oris/.config/Typora/typora-user-images/image-20210903152221729.png)
+   ```typescript
+   import { NgModule } from '@angular/core';
+   import { BrowserModule } from '@angular/platform-browser';
+   
+   import { AppRoutingModule } from './app-routing.module';
+   import { AppComponent } from './app.component';
+   import { HolaMundoComponent } from './hola-mundo.component';
+   
+   @NgModule({
+     declarations: [
+       AppComponent,
+       HolaMundoComponent,
+     ],
+     imports: [
+       BrowserModule,
+       AppRoutingModule
+     ],
+     providers: [],
+     bootstrap: [AppComponent]
+   })
+   export class AppModule { }
+   ```
 
 3. Etiqueta HTML
 
-   ![image-20210903152555176](/home/oris/.config/Typora/typora-user-images/image-20210903152555176.png)
+   ```typescript
+   template: '<p>Hola Mundo Component</p>'
+   ```
 
-4. Añadirlo en componente
+4. Añadir componente en app-component.html
 
-   ![image-20210903152328609](/home/oris/.config/Typora/typora-user-images/image-20210903152328609.png)
+   ```html
+   <h1>HOLA MY APP</h1>
+   <hola-mundo></hola-mundo>
+   ```
 
 5. Renderizarlo
 
-   ![image-20210903152401268](/home/oris/.config/Typora/typora-user-images/image-20210903152401268.png)
+   Ejecutarlo y ver que todo sale bien.
 
 Crear Componentes(Comando):
 
@@ -61,25 +95,57 @@ Crear Componentes(Extension VSCode - Angular Schematics).
 
 ## **String Interpolation**
 
-![image-20210903153255472](/home/oris/.config/Typora/typora-user-images/image-20210903153255472.png)
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { MoviesServices } from '../movies.service';
 
-`<p>{{nombre.toUpperCase()}}</p>`
+@Component({
+  selector: 'app-nuevo-componente',
+  templateUrl: './nuevo-componente.component.html',
+  styleUrls: ['./nuevo-componente.component.scss']
+})
+export class NuevoComponenteComponent implements OnInit {
+  nombre = 'Siro Oris';
+  peliculas = [
+    'Star Wars',
+    'Señor de los anillos',
+    'Indiana Jones'
+  ];
+  movies = [] as any;
 
-`<p>{{getProfesion()}}</p>`
+  constructor(service: MoviesServices) {
+    //const service = new MoviesServices();
+    this.movies = service.getMovies();
+  }
 
-![image-20210903153336554](/home/oris/.config/Typora/typora-user-images/image-20210903153336554.png)
+  ngOnInit(): void {
+  }
+
+  getProfesion(){
+    return 'Front End';
+  }
+
+}
+```
+
+Uso el nombre y accedo a la funcion en el html.
+
+```html
+<p>{{nombre.toUpperCase()}}</p>
+<p>{{getProfesion()}}</p>
+```
 
 ## **Directivas**
 
 ### ngFor
 
-`<p *ngFor="let pelicula of peliculas">{{pelicula}}</p>`
+```html
+<p *ngFor="let pelicula of peliculas">{{pelicula}}</p>
+```
 
-![image-20210904140046337](/home/oris/.config/Typora/typora-user-images/image-20210904140046337.png)
-
-`<p *ngFor="let movie of movies">Nombre: {{movie.nombre}} - Puntuación: {{movie.puntuacion}}/10</p>`
-
-![image-20210904140416471](/home/oris/.config/Typora/typora-user-images/image-20210904140416471.png)
+```html
+<p *ngFor="let movie of movies">Nombre: {{movie.nombre}} - Puntuación: {{movie.puntuacion}}/10</p>
+```
 
 ### ngIf
 
@@ -119,8 +185,6 @@ La agregamos en el html
 ```
 
 Listo
-
-![image-20211004121237613](/home/oris/.config/Typora/typora-user-images/image-20211004121237613.png)
 
 ## ngModel
 
