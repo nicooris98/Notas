@@ -188,7 +188,18 @@ Listo
 
 ## ngModel
 
-Sirve para bindear datos en 2 direcciones.
+Sirve para bindear datos en 2 direcciones. O sea, nos permite asignarle un valor a una variable del componente de forma dinamica. Si lo ponemos en un input y usamos el valor de la variable veremos que a medida que introducimos valores la variable cambia y se muestra al instante. Podemos usarlo en una seleccion de valores por ej.
+
+```html
+<select [(ngModel)]="seleccion">
+    <option value="Toyota">Toyota</option>
+    <option value="Fiat">Fiat</option>
+    <option value="Ford">Ford</option>
+</select>
+<p>Has seleccionado: {{ seleccion }}</p>
+```
+
+Ej hero.
 
 ```html
 <div>
@@ -231,6 +242,14 @@ imports: [
 ],
 ```
 
+## ngModelChange
+
+Nos sirve para devolver el valor del evento. Se pone el ngModelChange entre parentesis y el evento con signo $.
+
+```html
+<input type="text" [(ngModel)]="titulo" (ngModelChange)="log($event)" placeholder="Ingrese algo">
+```
+
 ## Error de variable/elemento no definido a mostrar
 
 ```
@@ -271,6 +290,67 @@ When the user picks a hero, selectedHero has a value and ngIf puts the hero deta
 ```
 
 Los ng container no salen en el html. La variable isLogged esta inicializada como false en el typescript por lo que se muestra todo el contenido del ng-container. Cuando se presiona el boton iniciar sesion pasa a tener valor true. Entonces el ng-container desaparece y se va por el else por lo que se muestra el ng-template. El ng-template se muestra porque en el else esta indicando que se muestre logueado que es como se llamo al ng-template.
+
+## Interfaces
+
+En angular las clases son interfaces. 
+
+```typescript
+export interface Usuario {
+    ID: number;
+    Nombre: string;
+    Apellidos: string;
+    Nick: string;
+    Email: string;
+    Contrasena: string;
+}
+```
+
+Luego tenemos lo que son las enumeraciones, que son una lista de posibilidades. Se pone luego del export interface.
+
+```typescript
+export interface Usuario {
+    ID: number;
+    Nombre: string;
+    Apellidos: string;
+    Nick: string;
+    Email: string;
+    Contrasena: string;
+    Tipo: UserType
+}
+
+export enum UserType {
+    Administrador,
+    Cliente,
+    Tecnico
+}
+```
+
+## Casteo
+
+Para castear un tipo de dato usamos <> y dentro el tipo de dato.
+
+```typescript
+user: Usuario = <Usuario>{
+    ID: 23,
+    Nombre: 'Nicolas',
+    Apellidos: 'Oris',
+    Email: 'nick@gmail.com',
+    Nick: 'Roman98',
+    Contrasena: '1234',
+    Tipo: UserType.Administrador
+  }
+```
+
+## Atributos
+
+Para cambiar una propiedad de un elemento hay que ponerla entre corchetes. Para asignarle el valor de una funcion a un evento simplemente se pone parentesis entre el evento y dentro de las comillas el nombre de la funcion que esta en el componente.
+
+```html
+<button (click)="unaFuncion()" [disabled]="desactivado">Titulo</button>
+```
+
+
 
 ## **Servicios**
 
