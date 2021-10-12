@@ -99,6 +99,16 @@ Ejercicio:
 
 Corregir el auto con lo de hoy. Ahora el auto tiene 5 pistones. Tengo 2 marcas de piston(A y B). Algunos seran del A y otros del B(3A y 2B). El piston A consume 1 de nafta y aumenta 1 temperatura. El piston B aumenta 0.5 temp y consume 0.5 de nafta. 500 explosiones en total. No hay if ni switch. 
 
+## Clase 12/10/21
+
+Patron Singleton.  En este ejercicio es mejor tener 5 pistones en motor que un array de pistones, si usamos array da la posibilidad a quitar o agregar pistones en tiempo de ejecucion. Piston es clase abstracta. El metodo arrancar en motor es virtual. Seteo las propiedades en el constructor de a y b, no seteo en la clase abstracta. El metodo arrancar tambien es abstracto. En la interfaz de motor paso parametros. El hilo en piston.
+
+Singleton me garantiza una sola instancia de un objeto. Una propiedad estatica es la que no necesita el objeto para que este "viva". Tenes que tener una propiedad estatica del tipo de la clase, el constructor debe ser privado y un metodo estatico que me devuelva algo del mismo objeto. Los metodos estaticos solo pueden acceder a propiedades estaticas. Patron state.
+
+Ejercicio:
+
+Auto tiene un radeador que cuando la temp del motor llega a 100 se dispara el radiador y le baja un 60% temp y lo enfria.
+
 ## DUDAS
 
 - Duda de Angular: En el proyecto de prueba de angular del heroe se crea una interfaz heroe en lugar de una clase, por que?  Rta: En angular las clases se definen como interfaces.
@@ -114,7 +124,7 @@ Corregir el auto con lo de hoy. Ahora el auto tiene 5 pistones. Tengo 2 marcas d
     }
   ```
 
-- No me deja declarar una variable sin inicializarla a menos que le ponga el ?. Siempre las inicializo con '' en caso de string por ej, estaria bien?
+- No me deja declarar una variable sin inicializarla a menos que le ponga el ?. Siempre las inicializo con '' en caso de string por ej, estaria bien?. Depende de lo que necesitemos, mejor instanciarlo.
 
   ```typescript
   email: string;
