@@ -103,7 +103,7 @@ Corregir el auto con lo de hoy. Ahora el auto tiene 5 pistones. Tengo 2 marcas d
 
 - Duda de Angular: En el proyecto de prueba de angular del heroe se crea una interfaz heroe en lugar de una clase, por que?  Rta: En angular las clases se definen como interfaces.
 
-- Diferencia entre definir un metodo con void y sin void 
+- Diferencia entre definir un metodo con void y sin void . Es lo mismo, por defecto lo hace void.
 
   ```typescript
   onSelect(hero: Hero): void{
@@ -112,6 +112,13 @@ Corregir el auto con lo de hoy. Ahora el auto tiene 5 pistones. Tengo 2 marcas d
   onSelect(hero: Hero){
       this.selectedHero = hero;
     }
+  ```
+
+- No me deja declarar una variable sin inicializarla a menos que le ponga el ?. Siempre las inicializo con '' en caso de string por ej, estaria bien?
+
+  ```typescript
+  email: string;
+  email?: string;
   ```
 
 - 

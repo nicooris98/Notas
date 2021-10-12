@@ -399,6 +399,16 @@ export class CinesService {
 }
 ```
 
+## Router-Outlet
+
+Router-Outlet is an Angular directive from the router library that is  used to insert the component matched by routes to be displayed on the  screen.
+
+```html
+<router-outlet></router-outlet>
+```
+
+
+
 ## Nodejs
 
 Iniciar servidor
