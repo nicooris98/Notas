@@ -107,7 +107,7 @@ Singleton me garantiza una sola instancia de un objeto. Una propiedad estatica e
 
 Ejercicio:
 
-Auto tiene un radeador que cuando la temp del motor llega a 100 se dispara el radiador y le baja un 60% temp y lo enfria.
+Auto tiene un radiador que cuando la temp del motor llega a 100 se dispara el radiador y le baja un 60% temp y lo enfria.
 
 ## DUDAS
 
@@ -131,4 +131,8 @@ Auto tiene un radeador que cuando la temp del motor llega a 100 se dispara el ra
   email?: string;
   ```
 
-- 
+- No necesito una instancia de Radiador para bajar la temperatura pero el Radiador es parte del motor. Se crea o no?
+
+- Necesitaria singleton para hacer todas las consultas creo.
+
+- Problema con la imagen de las CEs
