@@ -109,6 +109,14 @@ Ejercicio:
 
 Auto tiene un radiador que cuando la temp del motor llega a 100 se dispara el radiador y le baja un 60% temp y lo enfria.
 
+## Clase 14/10/21
+
+Radiador es de auto. Auto debe avisar al radiador para enfriar. El que avisa al auto es el motor porque motor tiene la temperatura. Motor disminuye temperatura. Agregar metodo en interfaz iauto para bajar termperatura. En motor metodo enfriar con un porcentaje de enfriamiento(parametro). Radiador tiene propiedad double cuanto enfria. En constructor se pone 0.6. Agregar imotor en radiador y agregar el metodo enfriar en imotor. Interfaz es como un filtro. El radiador no hace calculos sobre temperatura, lo hace el motor porque el tiene la temperatura.
+
+Ejercicio:
+
+Corregir ejercicio anterior.
+
 ## DUDAS
 
 - Duda de Angular: En el proyecto de prueba de angular del heroe se crea una interfaz heroe en lugar de una clase, por que?  Rta: En angular las clases se definen como interfaces.
@@ -133,6 +141,6 @@ Auto tiene un radiador que cuando la temp del motor llega a 100 se dispara el ra
 
 - No necesito una instancia de Radiador para bajar la temperatura pero el Radiador es parte del motor. Se crea o no?
 
-- Necesitaria singleton para hacer todas las consultas creo.
+- Necesitaria singleton para hacer todas las consultas creo. Los servicios de angular ya utilizan singleton por defecto
 
 - Problema con la imagen de las CEs
