@@ -117,6 +117,47 @@ Ejercicio:
 
 Corregir ejercicio anterior.
 
+## Clase 26/10/21
+
+Patron state: el objeto contexto implementa una interfaz estado y de esta heredan los estados especificos que realizara el objeto dependiendo del estado en que se encuentre.
+
+Semi builder. Wizard es como un instalador. Builder: la creacion del objeto se la dejo a otro, no se encarga el wizard. 
+
+Problematica new orden y pasar por parametro. Agrego OrderBuilder. El builder es una bolsa que recolecta muchos datos. Hay que usar singleton en orderbuilder. Al final de todas las pantallas creo Order y le asigno el valor de orderbuild con build. Uso orderbuild para la permanencia de datos entre pantallas.
+
+```
+public class Order {
+	public string NombreCliente { get; set; }
+	public string Direccion { get; set; }
+	public List<Producto> Productos { get; set; }
+	public DateTime Fecha { get; set; }
+}
+
+public class Producto {
+	public string Nombre { get; set;}
+	public int Cantidad { get; set; }
+}
+
+public class OrderBuilder {
+	private string NombreCliente { get; private set; }//set privado de esta forma
+	private string Direccion { get; set; }
+	private List<Producto> Productos { get; set; }
+	private DateTime Fecha { get; set; }
+	
+	//metodos de setear nombre y direccion
+	
+	public Order Build() {
+		return new Order
+		{
+			NombreCliente = this.NombreCliente;
+			//idem con otras prop
+		};
+	}
+}
+```
+
+
+
 ## DUDAS
 
 - Duda de Angular: En el proyecto de prueba de angular del heroe se crea una interfaz heroe en lugar de una clase, por que?  Rta: En angular las clases se definen como interfaces.
@@ -144,3 +185,5 @@ Corregir ejercicio anterior.
 - Necesitaria singleton para hacer todas las consultas creo. Los servicios de angular ya utilizan singleton por defecto
 
 - Problema con la imagen de las CEs
+
+- Problema con char
