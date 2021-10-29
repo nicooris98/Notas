@@ -184,6 +184,6 @@ public class OrderBuilder {
 
 - Necesitaria singleton para hacer todas las consultas creo. Los servicios de angular ya utilizan singleton por defecto
 
-- Problema con la imagen de las CEs
-
-- Problema con char
+- Problema con la imagen de las CEs. Resuleto
+- Agregar un favotito a servants, ce y command codes.
+- Problema al volver a buscar despues de favoritos en vez de salirme 2866 coincidencias me salen 1433.
