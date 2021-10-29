@@ -125,7 +125,7 @@ Semi builder. Wizard es como un instalador. Builder: la creacion del objeto se l
 
 Problematica new orden y pasar por parametro. Agrego OrderBuilder. El builder es una bolsa que recolecta muchos datos. Hay que usar singleton en orderbuilder. Al final de todas las pantallas creo Order y le asigno el valor de orderbuild con build. Uso orderbuild para la permanencia de datos entre pantallas.
 
-```
+```c#
 public class Order {
 	public string NombreCliente { get; set; }
 	public string Direccion { get; set; }
@@ -187,3 +187,4 @@ public class OrderBuilder {
 - Problema con la imagen de las CEs. Resuleto
 - Agregar un favotito a servants, ce y command codes.
 - Problema al volver a buscar despues de favoritos en vez de salirme 2866 coincidencias me salen 1433.
+
