@@ -185,6 +185,12 @@ public class OrderBuilder {
 - Necesitaria singleton para hacer todas las consultas creo. Los servicios de angular ya utilizan singleton por defecto
 
 - Problema con la imagen de las CEs. Resuleto
+
 - Agregar un favotito a servants, ce y command codes.
+
 - Problema al volver a buscar despues de favoritos en vez de salirme 2866 coincidencias me salen 1433.
+
+- Problema al intentar agregar a favoritos luego de buscar algo. Solucionado: Habia que comparar el localstorage con el id y no el id del servicio puesto que en ese momento no existia.
+
+- Problema cuando elimino un elemento de favoritos tengo que recargar la pagina, deberia mantenerme en la misma y que se actualice.
 
