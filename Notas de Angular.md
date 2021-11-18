@@ -1,19 +1,19 @@
 # ***Notas de Angular***	
 
-## **Crear Proyecto**
+## Crear Proyecto
 
 ```terminal
 ng new my-app
 ```
 
-## **Iniciar el servidor**
+## Iniciar Servidor
 
 ```terminal
 cd my-app
 ng serve -o
 ```
 
-## **Componente**
+## Componente
 
 Crear componentes(Forma manual):
 
@@ -93,7 +93,7 @@ Crear Componentes(Comando):
 
 Crear Componentes(Extension VSCode - Angular Schematics).
 
-## **String Interpolation**
+## String Interpolation
 
 ```typescript
 import { Component, OnInit } from '@angular/core';
@@ -135,7 +135,13 @@ Uso el nombre y accedo a la funcion en el html.
 <p>{{getProfesion()}}</p>
 ```
 
-## **Directivas**
+## Input y Output
+
+Literal esta todo en la documentación.
+
+https://angular.io/guide/inputs-outputs
+
+## Directivas
 
 ### ngFor
 
@@ -158,6 +164,14 @@ Uso el nombre y accedo a la funcion en el html.
     <input id="hero-name" [(ngModel)]="selectedHero.name" placeholder="name" />
   </div>
 </div>
+```
+
+### Generar Directiva
+
+Se usan para diseño.
+
+```bash
+ng g d directiva
 ```
 
 ## Hacer cambios dinamicos
@@ -186,7 +200,7 @@ La agregamos en el html
 
 Listo
 
-## ngModel
+## NgModel
 
 Sirve para bindear datos en 2 direcciones. O sea, nos permite asignarle un valor a una variable del componente de forma dinamica. Si lo ponemos en un input y usamos el valor de la variable veremos que a medida que introducimos valores la variable cambia y se muestra al instante. Podemos usarlo en una seleccion de valores por ej.
 
@@ -210,7 +224,7 @@ Ej hero.
 
 Here it binds the hero.name property to the HTML textbox so that data can flow in both directions: from the hero.name property to the textbox, and from the textbox back to the hero.name.
 
-## The missing FormsModule
+### The missing FormsModule
 
 Es un error de cuando usamos [(ngModel)] 
 

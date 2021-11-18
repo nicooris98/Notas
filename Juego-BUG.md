@@ -20,3 +20,9 @@ Todavia no tengo claro que hacer con tematica Bug por lo que procedere a realiza
 
 La idea elegida fue la del juego de piloto con un panel bugueado.
 
+# Herramienta Escogida:wrench:
+
+La herramienta que usare para desarrollar el juego sera pygame. Al ser una herramienta que desconozco tendre que primero aprenderla y familiarizarme con esta.
+
+# Aprendiendo Pygame:snake:
+
