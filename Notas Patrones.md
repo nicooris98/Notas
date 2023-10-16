@@ -1,4 +1,4 @@
-# Notas Martin Valdez
+# Notas
 
 ## Clase 08/09/21:
 
