@@ -1,0 +1,174 @@
+{
+  "main": {
+    "id": "9d53e1e486ebb294",
+    "type": "split",
+    "children": [
+      {
+        "id": "58ffaedab6a07b99",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "476fb1a8ed7383df",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "angular-testing.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "73cb37fdb359204e",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Enitity Framework Core.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ],
+        "currentTab": 1
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "139fd0f1e0cf95da",
+    "type": "split",
+    "children": [
+      {
+        "id": "ec9d25139d0d9049",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "ba3e2b3f6e412d35",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "6e5475fe54da6089",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "801b333a048debbb",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "938ac818d48af662",
+    "type": "split",
+    "children": [
+      {
+        "id": "fce38550b260931c",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "d71eb73b8f0c73d4",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Enitity Framework Core.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "47c9c63a0488ba60",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Enitity Framework Core.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "618b428c382dbeae",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "305fe12239396433",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Enitity Framework Core.md"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Abrir selector rápido": false,
+      "graph:Abrir vista gráfica": false,
+      "canvas:Crear nuevo canvas": false,
+      "daily-notes:Abrir la nota de hoy": false,
+      "templates:Insertar plantilla": false,
+      "command-palette:Abrir paleta de comandos": false
+    }
+  },
+  "active": "73cb37fdb359204e",
+  "lastOpenFiles": [
+    "angular-testing.md",
+    "Enitity Framework Core.md",
+    "Juego-BUG.md",
+    "Nota de C# en Ubuntu.md",
+    "Notas Patrones.md",
+    "Notas Server Nodejs.md",
+    "README.md",
+    "Notas Vim.md",
+    "Notas de Angular.md"
+  ]
+}
