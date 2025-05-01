@@ -1,6 +1,4 @@
-# Notas Server Node
-
-## Crear package.json
+# Crear package.json
 
 Dentro de server ejecutar
 
@@ -8,7 +6,7 @@ Dentro de server ejecutar
 npm init --yes
 ```
 
-## Instalar modulos
+# Instalar modulos
 
 ```bash
 npm i express morgan mysql2 cors
@@ -16,7 +14,7 @@ npm i express morgan mysql2 cors
 
 Esto crea la carpeta node_modules y el package.json.
 
-## Crear carpeta src
+# Crear carpeta src
 
 src, que es para el codigo de la aplicacion.
 
@@ -24,7 +22,7 @@ src, que es para el codigo de la aplicacion.
 
 Crear index.ts
 
-## Instalar typescrpit
+# Instalar typescrpit
 
 Dentro de server
 
@@ -54,7 +52,7 @@ tsc
 
 y vemos que ahora tenemos la carpeta build
 
-## Agregar comandos en package.json
+# Agregar comandos en package.json
 
 En la parte de scripts hay que agregar:
 
@@ -65,7 +63,7 @@ En la parte de scripts hay que agregar:
   }
 ```
 
-## Instalar nodemon
+# Instalar nodemon
 
 ```bash
 npm i nodemon -D
@@ -91,7 +89,7 @@ npm i @types/express -D
 npm i @types/morgan @types/cors -D
 ```
 
-## Crear carpeta controllers y archivos database.ts y keys.ts
+# Crear carpeta controllers y archivos database.ts y keys.ts
 
 En database va la conexion y en keys las propiedades para entrar
 
