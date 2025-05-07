@@ -553,6 +553,224 @@ import { configService } from './config/config.service';
 export class AppModule {}
 ```
 
+
+# JWT
+JWT es un estándar que define un método compacto y autocontenido que permite compartir de forma segura entre dos partes aserciones (claims) sobre una entidad (subject). Los datos están codificados en formato JSON incluidos en un _payload_ o cuerpo del mensaje y están firmados digitalmente.
+
+## Instalación
+```bash
+npm install @nestjs/jwt passport passport-jwt @nestjs/passport @types/passport-jwt bcrypt
+```
+
+## Passport
+[Passport](http://www.passportjs.org/) es un middleware de autenticación para Node. Se usa para autenticar peticiones. Usa un mecanismo de [_estrategias_](http://www.passportjs.org/packages/) para configurar la forma de autenticación (Facebook, Twitter, GitHub, Auth0, OAuth, Google, LDAP, …​). El módulo `passport-jwt` es una estrategia Passport que permite asegurar peticiones usando JWT sin sesiones.
+Crearemos una carpeta `utilities` donde guardaremos dos archivos:
+- Estrategia JWT para Passport
+- Módulo de autorización para ser importado por los controladores que quieran asegurar sus endpoints
+
+### Configuración de la estrategia Passport
+Configuraremos JWT como estrategia Passport para la autenticación. Definiremos:
+- Extracción de JWT en cabecera como tipo `Bearer`
+- Clave de verificación de firma del token
+- Función de validación del payload
+
+Archivo `utilities/jwt.strategy.ts`
+```typescript
+import { PassportStrategy } from '@nestjs/passport';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { jwtConstants } from './jwt.constants';
+
+@Injectable()
+export class JwtStrategy extends PassportStrategy(Strategy) { 
+  constructor() {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey: jwtConstants.secret,
+    });
+  }
+
+  async validate(payload: any) {
+    return { userId: payload.sub, email: payload.email };
+  }
+}
+```
+
+## Módulo de autenticación
+El módulo de autenticación define JWT como la estrategia Passport a usar para los que importen este módulo. Además, define una propiedad (`user`) para enviar el _payload_ del token en las peticiones.
+Archivo `utilities/auth.module.ts`
+```typescript
+import { Module } from '@nestjs/common';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './jwt.strategy';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { User } from '../users/user.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtModule } from '@nestjs/jwt';
+import { jwtConstants } from './jwt.constants';
+@Module({
+  imports: [
+    PassportModule.register({
+      defaultStrategy: 'jwt',
+      property: 'user',
+      session: false,
+    }),
+    TypeOrmModule.forFeature([User]),
+    JwtModule.register({
+      secret: jwtConstants.secret,
+      signOptions: { expiresIn: jwtConstants.expire }
+    })
+  ],
+  controllers: [AuthController],
+  providers: [JwtStrategy, AuthService],
+  exports: [PassportModule],
+})
+export class AuthModule { }
+```
+
+## AuthController
+```typescript
+import { Body, Controller, Post } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { UserDto } from '../users/user.dto';
+import { User } from '../users/user.entity';
+import { LoginDto } from './login.dto';
+  
+  @Controller('auth')
+  export class AuthController {
+  
+    constructor(private authService: AuthService) {}
+  
+    @Post('register')
+    register(@Body() userDTO: UserDto) { 
+      return this.authService.register(userDTO)
+    }
+
+    @Post('login')
+    login(@Body() loginDto: LoginDto) {
+        return this.authService.login(loginDto)
+    }
+  }
+```
+
+## AuthService
+```typescript
+import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm'; 
+import { Repository } from 'typeorm'; 
+import { User } from '../users/user.entity';
+import { UserDto } from '../users/user.dto';
+import { hash, compare } from 'bcrypt';
+import { LoginDto } from './login.dto';
+import { JwtService } from '@nestjs/jwt';
+
+@Injectable()
+export class AuthService {
+
+  constructor(
+    @InjectRepository(User) private booksRepository: Repository<User>,
+    private jwtService: JwtService
+  ) {}
+
+  async register(userObject: UserDto) {
+
+    const password = userObject.password
+
+    const plainToHash = await hash(password, 10)
+
+    userObject = {...userObject, password: plainToHash}
+
+    return this.booksRepository.save(userObject)
+
+  }
+
+  async login(userObject: LoginDto) {
+    const findUser = await this.booksRepository.findOne({where: { email: userObject.email}})
+
+    if(!findUser) throw new HttpException('USER_NOT_FOUND', 404)
+
+    const checkPassword = await compare(userObject.password, findUser.password)
+
+    if(!checkPassword) throw new HttpException('PASSWORD_INCORRECT', 403)
+
+    const payload = { id: findUser.id, email: findUser.email }
+
+    const token = this.jwtService.sign(payload)
+    const data = {
+        user: findUser,
+        token: token
+    }
+
+    return data
+  }
+
+}
+```
+
+
+
+## jwt-auth-guard.ts
+```typescript
+import { Injectable } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+
+@Injectable()
+export class JwtAuthGuard extends AuthGuard('jwt') {}
+```
+
+## jwt.constants.ts
+```typescript
+export const jwtConstants = {
+    secret: "supersecreto",
+    expire: "180s"
+}
+```
+
+## Restricción del acceso de los endpoints
+Añadimos el módulo `AuthModule` definido en el paso anterior al módulo de los endpoints que queremos proteger. El módulo `AuthModule` definía la configuración de la estrategia y el servicio de validación JWT a utilizar.
+Archivo `books/books.module.ts`
+
+```typescript
+...
+import { AuthModule } from '../utilities/auth.module';
+
+@Module({
+  imports: [
+    ...
+    , AuthModule], 
+  providers: [...],
+  controllers: [...],
+})
+
+export class BooksModule {}
+```
+
+Una vez definido el módulo, ya sólo falta proteger los endpoints. Podremos hacerlo de dos formas:
+- Proteger de una vez todos los endpoints del controlador
+- Proteger sólo los endpoints indicados
+
+La protección se hará usando el decorador `@UseGuards()`. Si el decorador se coloca antes de la definición de la clase, quedan protegidos todos los endpoints definidos en la clase. Si no se desea una protección de todos los endpoints, se colocará `@UseGuards()` antes de la definición de aquellos endpoints que se quieran proteger.
+
+A `@UseGuards()` se le pasa como argumento el nombre de estrategia de autenticación definida. En nuestro caso, la nuestra la habíamos definido como `jwt` en `Auth.module.ts`.
+
+Archivo `books.controller.ts`
+```typescript
+import {
+  ...
+  UseGuards, 
+} from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+...
+@Controller('books')
+ @UseGuards(JwtAuthGuard) 
+...
+export class BooksController {
+...
+}
+```
+
 # Definir un prefijo para la API
 Archivo `main.ts`
 
@@ -584,4 +802,376 @@ Si no incluimos el prefijo y seguimos invocando a http://localhost:3000 obtenend
 ```
 
 # Microservicios
-asd
+Los [microservicios](https://codigoencasa.com/como-crear-un-microservicio-nestjs-redis/) son un estilo arquitectónico en el que una aplicación se divide en un conjunto de servicios pequeños, independientes y poco acoplados. Cada microservicio se centra en realizar una función empresarial específica y se comunica con otros servicios a través de API.
+
+Este enfoque modular permite a los equipos desarrollar, desplegar y escalar cada servicio de forma independiente, proporcionando una mayor flexibilidad y ciclos de desarrollo más rápidos.
+
+Un microservicio es como crear otro servidor nestjs.
+Cada microservicio accede a su propia BD y pueden ser distintas por ej microservicioA con Postgres y microservicioB con Mongo.
+Un microservicio es otro backend de nestjs.
+
+## ¿Por qué separar las BD?
+- Independencia de microservicios: Cada uno debe poder evolucionar y escalar sin depender del otro.
+- Encapsulamiento de datos: Cada servicio solo accede a sus propios datos directamente. Si necesita algo del otro, lo pide vía NATS.
+- Escalabilidad y mantenibilidad: Mejor separación de responsabilidades.
+
+## ¿Cuándo sí tiene sentido microservicios?
+- Cada servicio tiene su propia base de datos.
+- Se comunican por mensajes/eventos (como NATS) o API.
+- Están desacoplados en lógica y despliegue.
+
+## Configurar docker
+Dentro de la carpeta padre del proyecto(la que contiene al api-gateway y a los microservicios) hay que crear un archivo docker-compose.yml. Lo que hace esto es lanza un contenedor de NATS, el message broker que tus microservicios usarán para comunicarse. Expone el puerto 4222, que es el puerto estándar en el que los clientes NATS (como NestJS con @nestjs/microservices) se conectan.
+Se levanta con `docker-compose up -d`.
+```docker
+services:
+  nats-service:
+    image: nats:latest
+    ports: 
+      - "4222:4222"
+```
+
+## Api Gateway
+Aqui es donde ocurriran las peticiones http. Hay que instalar `@nestjs/microservices`.
+
+### .env
+Hay que crear las variables de entorno. Tambien instalar `dotenv`.
+```env
+PORT=3000
+NATS_SERVER=nats://localhost:4222
+```
+
+### main.ts
+```typescript
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { Logger, ValidationPipe } from '@nestjs/common';
+import { GlobalRpcExceptionFilter } from './common/exceptions/rpc-exception.filter';
+import { environmentsVariables } from './config';
+
+async function bootstrap() {
+  const logger = new Logger("gateaway")
+  const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix('api/v1');
+  app.useGlobalFilters(new GlobalRpcExceptionFilter())
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true
+    })
+  )
+  await app.listen(environmentsVariables.port);
+  logger.log(`Gateway is running on port ${environmentsVariables.port}`)
+}
+bootstrap();
+```
+
+Primero se configura el main.ts.
+
+### GlobalRpcExcepctionFilter
+Es un filtro de excepciones personalizado en NestJS que captura errores del tipo RpcException cuando ocurren en microservicios, y los traduce a respuestas HTTP en el Gateway.
+
+```typescript
+import { ArgumentsHost, Catch, ExceptionFilter } from "@nestjs/common";
+import { RpcException } from "@nestjs/microservices";
+
+@Catch(RpcException)
+export class GlobalRpcExceptionFilter implements ExceptionFilter {
+    catch(exception: RpcException, host: ArgumentsHost) {
+        const ctx = host.switchToHttp()
+        const response = ctx.getResponse()
+
+        const rpcError = exception.getError()
+
+        if(rpcError.toString().includes("Empty Response")) {
+            return response.status(500).json({
+                status: 500,
+                message: rpcError
+                    .toString()
+                    .substring(0, rpcError.toString().indexOf("(") -1)
+            })
+        }
+
+        if(
+            typeof rpcError == "object" &&
+            "status" in rpcError &&
+            "message" in rpcError
+        ) {
+            const status = rpcError.status ?? 400
+            return response.status(status).json(rpcError)
+        }
+
+        return response.status(400).json({
+            status: 400,
+            message: rpcError
+        })
+    }
+}
+```
+
+El decorador catch le dice a Nest si ocurre una excepción de tipo RpcException, usa esta clase para manejarla.
+El metodo catch se ejecuta automáticamente cuando se lanza una `RpcException`.
+- exception: la excepción lanzada (en este caso un RpcException)
+- host: el contexto de ejecución
+
+|Caso detectado|Qué hace|
+|---|---|
+|`rpcError` contiene `"Empty Response"`|Devuelve 500 y limpia el mensaje|
+|`rpcError` es objeto con `status` y `message`|Devuelve ese error tal cual con su status|
+|Otro caso (string, objeto sin forma)|Devuelve 400 con el mensaje crudo|
+
+### Crear el recurso
+```bash
+nest g res notes
+✔ What transport layer do you use? HTTP
+✔ Would you like to generate CRUD entry points? No
+```
+
+
+### Nats
+Hay que crear el modulo de nats dentro de `transports/nats.module.ts`. Tambien hay que instalar nats(`npm i nats`).
+```typescript
+import { Module } from '@nestjs/common';
+import { ClientsModule, Transport } from '@nestjs/microservices'
+import { environmentsVariables, NATS_SERVICE } from 'src/config';
+
+@Module({
+    imports: [
+        ClientsModule.register([
+            {
+                name: NATS_SERVICE,
+                transport: Transport.NATS,
+                options: {
+                    servers: environmentsVariables.natsServer
+                }
+            }
+        ])
+    ],
+    controllers: [],
+    providers: [],
+    exports: [
+        ClientsModule.register([
+            {
+                name: NATS_SERVICE,
+                transport: Transport.NATS,
+                options: {
+                    servers: environmentsVariables.natsServer
+                }
+            }
+        ])
+    ]
+})
+export class NatsModule { }
+
+```
+
+### Importar Nats
+Hay que importar el modulo de nats en los distintos recursos que creemos.
+```typescript
+import { Module } from '@nestjs/common';
+import { AuthController } from './auth.controller';
+import { NatsModule } from 'src/transports/nats.module';
+
+@Module({
+  controllers: [AuthController],
+  providers: [],
+  imports: [NatsModule]
+})
+export class AuthModule {}
+
+```
+
+
+### Ajustar DTOs
+Ajustar los DTOs . Se recomienda usar `class-validator` y `class-transformer`.
+```typescript
+import { IsEmail, IsString, MaxLength, MinLength } from "class-validator";
+
+export class LoginUserDto {
+
+    @IsEmail()
+    @IsString()
+    email:string
+
+    @IsString()
+    @MinLength(6)
+    @MaxLength(55)
+    password: string
+    
+}
+```
+
+### ClientProxy
+Cliente de Nest para comunicación con microservicios. Estás inyectando una instancia de ClientProxy en tu controlador, usando el token NATS_SERVICE. Este ClientProxy es la clase que NestJS usa para enviar mensajes a un microservicio mediante un transporte nats.
+@Inject(NATS_SERVICE)  le dice a NestJS quiero que busques una instancia registrada con el token NATS_SERVICE y la inyectes aquí. El token NATS_SERVICE fue registrado en el modulo nats.
+
+this.client.send("auth.register", registerUserDto): Aquí estás enviando un mensaje RPC (tipo "petición-respuesta") al microservicio que maneja autenticación.
+"auth.register" es el pattern (clave) con el que el microservicio debe escuchar (@MessagePattern("auth.register")).
+registerUserDto es el payload que se manda (datos del usuario a registrar).
+
+Se usa el pipe(catchError(...)) porque `send()` devuelve un **Observable** de RxJS, no una Promise. Entonces, si algo sale mal en el microservicio (por ejemplo, lanza un `RpcException`), debes capturar el error con `catchError`. Esto re-lanza el error como un `RpcException`, que el **`GlobalRpcExceptionFilter`** puede luego interceptar y transformar en una respuesta HTTP limpia y controlada.
+
+```typescript
+import { Controller, Get, Post, Body, Patch, Param, Delete, Inject } from '@nestjs/common';
+import { RegisterUserDto } from './dto/register-user.dto';
+import { LoginUserDto } from './dto/login-user.dto';
+import { NATS_SERVICE } from 'src/config';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
+import { catchError } from 'rxjs';
+
+@Controller('auth')
+export class AuthController {
+  constructor(@Inject(NATS_SERVICE) private readonly client: ClientProxy) { }
+
+  @Post("register")
+  register(@Body() registerUserDto: RegisterUserDto) {
+    return this.client.send("CREATE_USER", registerUserDto)
+      .pipe(
+        catchError(error => {
+          throw new RpcException(error)
+        })
+      )
+  }
+
+  @Post("login")
+  login(@Body() loginUserDto: LoginUserDto) {
+    return this.client.send("auth.login", loginUserDto)
+      .pipe(
+        catchError(error => {
+          throw new RpcException(error)
+        })
+      )
+  }
+}
+
+```
+
+## Microservicio
+### Crear el microservicio
+```bash
+nest new notes-microservice
+```
+
+### Eliminar archivos que no sirven
+Aqui hay que eliminar el app.controller.ts, app.service.ts y el archivo app.controller.spec.ts.
+
+### .env
+```env
+NATS_SERVER=nats://localhost:4222
+JWT_SECRET=jwtnestjs
+
+DATABASE_URL="postgresql://postgres:secret@localhost:5433/auth?schema=public"
+```
+
+### docker-compose.yml
+Para correr el archivo hay que ejecutar `docker-compose up -d`.
+```docker
+services:
+  auth-ms-db:
+    container_name: auth-ms
+    image: postgres:12-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=auth
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    ports:
+      - 5433:5432
+
+volumes:
+  postgres:
+```
+
+### Modificar main.ts
+```typescript
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { Logger, ValidationPipe } from '@nestjs/common';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { environments } from './config/environments';
+
+async function bootstrap() {
+  const logger = new Logger("Notes-Microservice")
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
+    transport: Transport.NATS,
+    options: {
+      servers: environments.natsServer
+    }
+  });
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true
+    })
+  )
+  await app.listen();
+  logger.log(`Notes-Microservice Started listening on ${environments.natsServer}`)
+}
+bootstrap();
+
+```
+
+
+### Crear el recurso
+```bash
+nest g res notes
+✔ What transport layer do you use? Microservice (non-HTTP)
+✔ Would you like to generate CRUD entry points? Yes
+```
+
+### Configurar jwt
+Dentro del archivo auth.module.ts.
+```typescript
+import { Module } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+import { environments } from 'src/config';
+import { JwtModule } from '@nestjs/jwt';
+
+@Module({
+  imports: [
+    JwtModule.register({
+      global: true,
+      secret: environments.jwtSecret,
+      signOptions: { expiresIn: "1h" }
+    })
+  ],
+  controllers: [AuthController],
+  providers: [AuthService],
+})
+export class AuthModule {}
+
+```
+
+### Subscribirse a los canales
+Cuando se trata de microservicios no son peticiones http sino que son mensajes a los que hay que subscribirse. Esos nombres deben coincidir con los que estan en el api gateway.
+```typescript
+import { Controller } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
+import { NotesService } from './notes.service';
+import { CreateNoteDto } from './dto/create-note.dto';
+
+@Controller()
+export class NotesController {
+  constructor(private readonly notesService: NotesService) {}
+
+  @MessagePattern('notes.create')
+  create(@Payload() createNoteDto: CreateNoteDto) {
+    return this.notesService.create(createNoteDto);
+  }
+
+  @MessagePattern('notes.findAll')
+  findAll() {
+    return this.notesService.findAll();
+  }
+}
+
+```
+
+## Comunicación entre microservicios
+La comunicacion entre microservicios se realiza de la misma forma que desde un api-gateway a un microservicio.
+1. Instalar nats
+2. Crear el modulo de nats
+3. Importar el modulo de nats en el modulo que se comunicara con el microservicio
+4. Inyectar ClientProxy en el constructor del servicio para poder hacer uso de la funcion send
