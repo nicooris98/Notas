@@ -235,6 +235,18 @@ docker container run \
 postgres:15.1
 ```
 
+```bash
+docker container run \
+-d \
+--name tesis-db \
+-e POSTGRES_PASSWORD=postgres \
+-e POSTGRES_USER=postgres \
+-e POSTGRES_DB=Tesis \
+-v postgres-db:/var/lib/postgresql/data \
+-p 5432:5432 \
+postgres:13.21-alpine3.20
+```
+
 ## pgAdmin
 ```bash
 docker container run \
@@ -338,6 +350,10 @@ services:
       - POSTGRES_PASSWORD=123456
 ```
 
+### Bajar volumenes
+```bash
+docker compose down --volumes
+```
 
 ## Levantar el archivo
 ```bash
@@ -508,26 +524,213 @@ RUN rm -rf tests && rm -rf node_modules
 FROM --platform=linux/amd64 node:19.2-alpine3.16
 ```
 
-## BuilderX
+# BuilderX
 Con esto creamos un builder para crear imagenes multiplataforma.
 ```bash
 docker buildx create --name mybuilder --driver docker-container --bootstrap
 ```
 
-### Listar builders
+## Listar builders
 El que sale con * es el que se esta utilizando actualmente.
 ```
 docker buildx ls
 ```
 
-### Cambiar de builder
+## Cambiar de builder
 ```bash
 docker buildx use mybuilder
 ```
 
-### Especificar plataformas y hacer el push
+## Context
+No me funciono el comando para cambiar de builder pero si con el de context.
+### Verifica los contextos
+```bash
+docker context ls
+```
+
+### Cambia al contexto por defecto
+```bash
+docker context use default
+```
+
+## Especificar plataformas y hacer el push
 ```bash
 docker buildx build --platform linux/amd64,linux/arm64 \
 -t noris98/yt-dw --push .
 ```
 
+# Multi-stage(Multi-state) Build
+Basicamente es hacer el build por etapas. Cada etapa comienza con un FROM la nombramos luego de la palabra reservada as.
+```Dockerfile
+FROM node:19.2-alpine3.16 as deps
+
+# cd app
+WORKDIR /app
+
+# Destino /app porque definimos antes /app como WORKDIR
+COPY package.json package-lock.json ./
+```
+
+## Docker compose
+Podemos indiciar en el docker-compose.yml que construya un servicio en base a un Dockerfile.
+- context: Le indicamos la ruta del Dockerfile.
+- target: Le decimos que etapa quiere ejecutar, en este caso la etapa nombrada como dev.
+- dockerfile: Aqui le pasamos el nombre del Dockerfile.
+
+```yml
+app:
+    build:
+      context: .
+      target: dev
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app/
+      - /app/node_modules
+    container_name: nest-app
+    ports:
+      - ${PORT}:${PORT}
+    environment:
+      - APP_VERSION=${APP_VERSION}
+      - STAGE=${STAGE}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USERNAME=${DB_USERNAME}
+      - PORT=${PORT}
+      - HOST_API=${HOST_API}
+      - JWT_SECRET=${JWT_SECRET}
+```
+
+### Ejecutar
+Para ejecutarlo es con el comando `docker compose build`, esto crea la imagen y luego se ejecuta normalmente con el `docker compose up`.
+
+#### Especificar archivo
+A veces tenemos que especificar el archivo para el build o para el up, esto es util cuando tenemos diferentes archivos docker-compose y uno es para desarrollo y otro para produccion.
+```
+docker compose -f docker-compose.prod.yml build
+docker compose -f docker-compose.prod.yml up
+```
+
+### Ejemplo
+docker-compose.yml.
+```yml
+services:
+
+  app:
+    build:
+      context: .
+      target: dev
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app/
+      - /app/node_modules
+    container_name: nest-app
+    ports:
+      - ${PORT}:${PORT}
+    environment:
+      - APP_VERSION=${APP_VERSION}
+      - STAGE=${STAGE}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USERNAME=${DB_USERNAME}
+      - PORT=${PORT}
+      - HOST_API=${HOST_API}
+      - JWT_SECRET=${JWT_SECRET}
+  
+  db:
+    image: postgres:14.3
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    container_name: ${DB_NAME}
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+
+
+volumes:
+  postgres-db:
+    external: false
+```
+
+Dockerfile
+```dockerfile
+FROM node:19-alpine3.15 as dev
+WORKDIR /app
+COPY package.json ./
+RUN yarn install --frozen-lockfile
+CMD [ "yarn", "start:dev" ]
+
+
+FROM node:19-alpine3.15 as dev-deps
+WORKDIR /app
+COPY package.json package.json
+RUN yarn install --frozen-lockfile
+
+
+FROM node:19-alpine3.15 as builder
+WORKDIR /app
+COPY --from=dev-deps /app/node_modules ./node_modules
+COPY . .
+# RUN yarn test
+RUN yarn build
+
+FROM node:19-alpine3.15 as prod-deps
+WORKDIR /app
+COPY package.json package.json
+RUN yarn install --prod --frozen-lockfile
+
+
+FROM node:19-alpine3.15 as prod
+EXPOSE 3000
+WORKDIR /app
+ENV APP_VERSION=${APP_VERSION}
+COPY --from=prod-deps /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+
+CMD [ "node","dist/main.js"]
+```
+
+#### Explicación de los volumenes
+La linea en la seccion volumes `- .:/app/` monta el código fuente local de tu máquina (el .) dentro del contenedor en la ruta /app. Es lo que permite que al editar archivos en tu máquina, se reflejen automáticamente en el contenedor (muy útil para desarrollo).
+La otra linea `- /app/node_modules` crea un volumen anónimo (o sea, no persistente ni con nombre explícito) para la carpeta /app/node_modules dentro del contenedor, con el objetivo de evitar que el volumen anterior sobrescriba los node_modules instalados dentro del contenedor. Le esta diciendo a docker para esta carpeta específica, no uses lo que viene del volumen ., sino usá un volumen aislado para que no se sobrescriba.
+Docker crea un **volumen anónimo** _específico para ese subdirectorio_, que:
+1. **Evita que el montaje del código fuente (`.:/app/`) lo pise**.
+2. **Permite que los `node_modules` instalados dentro del contenedor sigan estando disponibles**, aunque tu máquina no los tenga.
+3. **Aísla esa carpeta** del resto del sistema de archivos montado, lo que es ideal porque `node_modules` suele tener binarios específicos al sistema operativo (y lo que tenés en tu máquina podría no ser compatible con el contenedor, especialmente en Windows/macOS vs. Linux).
+
+### Tags
+Podemos especificar el tag de la imagen que se crea.
+```yml
+services:
+  app:
+    build:
+      context: .
+      target: ${STAGE}
+      dockerfile: Dockerfile
+    image: noris98/teslo-shop-backend:2.0.0 # aqui
+    container_name: nest-app
+    ports:
+      - ${PORT}:${PORT}
+    environment:
+      - APP_VERSION=${APP_VERSION}
+      - STAGE=${STAGE}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USERNAME=${DB_USERNAME}
+      - PORT=${PORT}
+      - HOST_API=${HOST_API}
+      - JWT_SECRET=${JWT_SECRET}
+```
+
+docker container run -d --name project-test -p 5432 -e POSTGRES_PASSWORD=postgres -v postgres-db-test:/var/lib/postgresql/data postgres:13.21-alpine3.20
+
+
+postgresql://teslo:uTi9Ls2EqE8ojfNbXUjxNhEUYNlSnmqk@dpg-d0oi2uumcj7s73d6s3cg-a.oregon-postgres.render.com/teslodb_zzi6
