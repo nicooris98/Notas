@@ -4,11 +4,11 @@ Un entorno virtual es un espacio aislado donde puedes instalar paquetes de Pytho
 
 ## 🤔 ¿Por qué es importante usarlo?
 
-1. Aislamiento de dependenciasSi tienes varios proyectos y cada uno necesita una versión diferente de una librería (por ejemplo, Django 3.2 en uno y Django 4.0 en otro), sin entornos virtuales habría conflictos.
+1. Aislamiento de dependencias: Si tienes varios proyectos y cada uno necesita una versión diferente de una librería (por ejemplo, Django 3.2 en uno y Django 4.0 en otro), sin entornos virtuales habría conflictos.
 
-2. Evitar ensuciar el sistemaInstalar paquetes globalmente puede generar desorden y errores. Con un entorno virtual, todo lo que instalas queda en una carpeta separada del sistema.
+2. Evitar ensuciar el sistema: Instalar paquetes globalmente puede generar desorden y errores. Con un entorno virtual, todo lo que instalas queda en una carpeta separada del sistema.
 
-3. Fácil de replicar en otros equiposUsas un archivo requirements.txt que contiene los paquetes del entorno. Así, cualquiera puede crear el mismo entorno con `pip install -r requirements.txt`.
+3. Fácil de replicar en otros equipos: Usas un archivo requirements.txt que contiene los paquetes del entorno. Así, cualquiera puede crear el mismo entorno con `pip install -r requirements.txt`.
 
 ## Crear un entorno virtual
 
@@ -36,6 +36,29 @@ En un entorno activado, ejecutar:
 deactivate
 ```
 
+## Seleccionar interprete
+Usar el intérprete de `.venv` es **obligatorio** para mantener orden, evitar conflictos y garantizar que tu proyecto funcione igual en cualquier entorno. Si no activas el entorno virtual, `pip install` usará el Python global, y FastAPI se instalará en todo el sistema (no recomendado).
+- En VS Code:
+    1. Abre la paleta de comandos (`Ctrl+Shift+P`).    
+    2. Busca "Python: Select Interpreter".   
+    3. Elige el que esté en `.venv/bin/python` (Linux/Mac) o `.venv\Scripts\python.exe` (Windows).
+
+# Dependencias
+Para instalar dependencias usamos pip.
+```bash
+pip install flask
+```
+
+## Instalar desde archivo requirements
+Podemos crear un archivo llamado `requirements.txt` y poner alli las dependencias. Ponemos los nombres uno abajo de otro.
+```txt
+fastapi
+uvicorn
+```
+Luego lo instalamos de la siguiente manera.
+```bash
+pip install -r requirements.txt
+```
 # Paquetes
 
 Directorios(carpetas) donde se almacenan modulos relacionados entre si.[Archivo init.py](https://www.youtube.com/watch?v=sgcTujbQhmA&list=PL_wRgp7nihybbJ2vZaVGI5TDdPaK_dFuC&index=28)
