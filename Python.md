@@ -59,6 +59,12 @@ Luego lo instalamos de la siguiente manera.
 ```bash
 pip install -r requirements.txt
 ```
+
+## Freeze
+Con esto hacemos que el archivo `requirements.txt` tenga las dependencias necesarias junto con sus versiones exactas.
+```bash
+pip freeze > requirements.txt
+```
 # Paquetes
 
 Directorios(carpetas) donde se almacenan modulos relacionados entre si.[Archivo init.py](https://www.youtube.com/watch?v=sgcTujbQhmA&list=PL_wRgp7nihybbJ2vZaVGI5TDdPaK_dFuC&index=28)
